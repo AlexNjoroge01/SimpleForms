@@ -1,0 +1,15 @@
+import { Suspense } from "react"
+import type { Metadata } from "next"
+
+import { AuthForm } from "@/components/auth/auth-form"
+import { googleEnabled } from "@/lib/auth"
+
+export const metadata: Metadata = { title: "Log in" }
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <AuthForm mode="login" googleEnabled={googleEnabled} />
+    </Suspense>
+  )
+}

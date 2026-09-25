@@ -1,17 +1,34 @@
-import { Geist, Geist_Mono, Inter, Raleway } from "next/font/google"
+import type { Metadata, Viewport } from "next"
+import { JetBrains_Mono, Manrope } from "next/font/google"
 
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils";
+import { Providers } from "@/components/providers"
+import { cn } from "@/lib/utils"
 
-const ralewayHeading = Raleway({subsets:['latin'],variable:'--font-heading'});
-
-const inter = Inter({subsets:['latin'],variable:'--font-sans'})
-
-const fontMono = Geist_Mono({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-mono",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-manrope",
 })
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+})
+
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  title: {
+    default: "SimpleForms — Beautiful forms for Kenya, built with AI",
+    template: "%s · SimpleForms",
+  },
+  description:
+    "Describe the form you need and SimpleForms builds it. Share by link or QR, collect responses, export to CSV.",
+}
+
+export const viewport: Viewport = {
+  themeColor: "#E8F1E3",
+}
 
 export default function RootLayout({
   children,
@@ -22,10 +39,10 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", inter.variable, ralewayHeading.variable)}
+      className={cn("antialiased", manrope.variable, jetbrainsMono.variable)}
     >
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
+      <body className="font-sans">
+        <Providers>{children}</Providers>
       </body>
     </html>
   )
