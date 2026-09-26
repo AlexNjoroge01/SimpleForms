@@ -20,6 +20,7 @@ Kenyan-first form builder: create forms from scratch or from a template, publish
 | 8 | ~~AI generate / edit (OpenRouter)~~ | ❌ Removed — no paid AI during the free beta. Forms start blank or from a template |
 | 9 | Emails (new submission, daily digest), cron jobs, full landing, settings page, loading/error/not-found states | ✅ Done — e2e incl. full mobile core flow |
 | 10 | Admin dashboard (`/admin`): users, new sign-ups, active creators, forms, responses, 30-day sign-up chart, recent users | ✅ Done — admin flag seeded for alexnjoroge102@gmail.com |
+| 11 | Forgot / reset password (emailed one-hour, single-use link), `db:set-password` script | ✅ Done — e2e (`password-reset.spec.ts`) |
 
 ### Before going live
 - **Provision the storage bucket:** `neon link && neon deploy` (creates `simpleforms-uploads` from [neon.ts](neon.ts)). Browsers upload straight to the bucket, so it must allow CORS `POST` from `NEXT_PUBLIC_APP_URL`. Until then, file-upload questions show “Upload failed”.
@@ -69,6 +70,7 @@ Notes:
 | `pnpm db:generate` · `db:migrate` · `db:studio` | Drizzle migrations / studio |
 | `pnpm db:seed` | Demo user, 3 published forms, 1,000 responses |
 | `pnpm db:seed-admin [email]` | Grant `/admin` to an existing account (default alexnjoroge102@gmail.com) |
+| `pnpm db:set-password <email> '<password>'` | Set an account's password (quote it so the shell leaves `$` alone) |
 
 E2E tests create throwaway users (`e2e-*@example.test`) in the configured database; a global teardown deletes them (and everything they own) after each run. API integration tests (`phase3-submit-api`, `phase7-uploads`) seed forms directly with SQL. Against `pnpm dev` the first run is slow while routes compile; `pnpm build && pnpm start -p 3000` is faster.
 
@@ -77,7 +79,7 @@ E2E tests create throwaway users (`e2e-*@example.test`) in the configured databa
 ```
 app/
   (marketing)/        Landing (§9.1)
-  (auth)/             /login, /signup + server actions
+  (auth)/             /login, /signup, /forgot-password, /reset-password + server actions
   (app)/              Authed shell — layout calls requireUser()
     dashboard/        Forms grid with actions (+ loading skeleton)
     forms/new/        Chooser: blank · template
@@ -124,11 +126,13 @@ tests/unit · tests/e2e
 - **Responses:** `/api/forms/[id]/responses` paginates server-side (25/page). Search is `answers::text ILIKE`; choice filters match a single value or array containment. The URL mirrors filters so reloads keep the view; CSV export takes the same query params.
 - **CSV (§11):** UTF-8 BOM, `Submitted at` in Africa/Nairobi, current columns + columns that only exist in older snapshots, values via the field registry, formula-injection guard (validated phones and numbers exempt), keyset pagination in batches of 500 using a microsecond-exact cursor.
 - **Uploads:** `sign` checks the field (type, size, rate limit) and returns a presigned POST (size enforced by storage) plus an HMAC token binding key ↔ form ↔ field; the browser uploads directly; `complete` verifies the token, `HEAD`s the object, re-checks size/type, and records an unclaimed `uploads` row whose id becomes the answer. Unclaimed rows older than 24h are deleted (object first) by the cleanup cron, which also closes forms past `closeAt`. Owner downloads go through `/api/files/[id]` → 10-minute presigned URL, forced `attachment` except raster-image previews.
-- **Admin:** `users.is_admin` (migration `0003_admin_role` seeds the owner; `pnpm db:seed-admin` re-applies it). `requireAdmin()` reads the flag from the DB on every request, so revoking is immediate, and answers 404 to non-admins. Counts include every account, e2e/demo ones too. `lib/admin.ts` runs the aggregates in parallel; days are bucketed in Africa/Nairobi.
+- **Admin:** `users.is_admin` (migration `0003_admin_role` seeds the owner; `pnpm db:seed-admin` re-applies it). `requireAdmin()` reads the flag from the DB on every request, so revoking is immediate, and answers 404 to non-admins. Counts include every account, so running `pnpm db:seed` or the e2e suite against this database adds demo/test users (e2e users are removed by the teardown; remove the demo user with `delete from users where email = 'demo@simpleforms.test'`). `lib/admin.ts` runs the aggregates in parallel; days are bucketed in Africa/Nairobi.
 - **Field registry:** every question type is defined once in [lib/fields/registry.ts](lib/fields/registry.ts). Adding a type = one registry entry + a builder preview case + a public control case.
+- **Password reset:** the token is 32 random bytes; only its SHA-256 is stored, in `verification_tokens` under `password-reset:<email>`. It expires after 60 minutes and is deleted by the same query that checks it, so it works once. Requesting a link always shows the same "check your email" answer, whether or not the account exists, and is limited to 5 an hour per IP and per email. A successful reset signs you in. Existing sessions are JWTs, so other devices stay signed in until their session expires. With Resend in sandbox mode, only the Resend account owner receives the email; with a `mock_` key, the link is printed to the dev console.
 - **Email:** `lib/email.ts` never throws; failures are logged so they can't break a user flow.
 - **Theme:** the site is always light (pale-green page, dark only inside `DarkSection` blocks and the public form's per-form dark theme, which is scoped to `.pf`). `ThemeProvider` sets `forcedTheme="light"` so a stale `theme=dark` in localStorage can't put `.dark` on `<html>` and flip every token site-wide.
 
 ### Design notes (derived values not in Design.md)
 - Accent presets besides the brand emerald (teal, blue, violet, pink, red, orange, ink) — required by Blueprint §16, chosen for AA contrast with white text.
+- Background decor ([components/site/background-decor.tsx](components/site/background-decor.tsx)): squiggles, dot grids, a ring and sparkles drawn in `--primary`, `--primary-bright` and a touch of `--gold` at 15–60% opacity, fixed behind all content. Cards, dark sections and public forms paint over it, so forms stay clean.
 - Public form: `--pf-border` (a darker hairline so inputs meet 3:1), `--pf-error` (#B42318 / #FDA29B on dark), and a lightened accent for text/borders on the dark theme.

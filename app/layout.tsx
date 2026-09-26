@@ -3,6 +3,7 @@ import { JetBrains_Mono, Manrope } from "next/font/google"
 
 import "./globals.css"
 import { Providers } from "@/components/providers"
+import { BackgroundDecor } from "@/components/site/background-decor"
 import { cn } from "@/lib/utils"
 
 const manrope = Manrope({
@@ -42,6 +43,7 @@ export default function RootLayout({
       className={cn("antialiased", manrope.variable, jetbrainsMono.variable)}
     >
       <body className="font-sans">
+        <BackgroundDecor />
         <Providers>{children}</Providers>
       </body>
     </html>

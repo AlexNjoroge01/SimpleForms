@@ -14,8 +14,8 @@ export default function WelcomeEmail({ name, appUrl }: { name?: string | null; a
             Karibu{name ? `, ${name}` : ""}! 👋
           </Heading>
           <Text style={{ color: c.muted, fontSize: 16, lineHeight: 1.6 }}>
-            Your SimpleForms account is ready. Describe the form you need, share it by link or QR code,
-            and watch responses arrive.
+            Your SimpleForms account is ready. Start blank or from a Kenyan template, share it by link or
+            QR code, and watch responses arrive.
           </Text>
           <Button
             href={`${appUrl}/dashboard`}

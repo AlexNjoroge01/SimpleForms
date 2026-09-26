@@ -3,13 +3,18 @@
 import bcrypt from "bcryptjs"
 import { eq } from "drizzle-orm"
 import { AuthError } from "next-auth"
+import { headers } from "next/headers"
 import { after } from "next/server"
 
 import { users } from "@/db/schema"
 import { signIn } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { sendWelcomeEmail } from "@/lib/email"
-import { loginSchema, signupSchema } from "@/lib/validation/auth"
+import { sendPasswordResetEmail, sendWelcomeEmail } from "@/lib/email"
+import { appUrl } from "@/lib/env"
+import { clientIp, hashIp } from "@/lib/server/ip"
+import { consumeResetToken, createResetToken, RESET_TTL_MIN } from "@/lib/server/password-reset"
+import { LIMITS, rateLimit } from "@/lib/server/rate-limit"
+import { forgotPasswordSchema, loginSchema, resetPasswordSchema, signupSchema } from "@/lib/validation/auth"
 
 export type AuthActionResult = { error: string } | undefined
 
@@ -50,4 +55,50 @@ export async function signupAction(input: unknown, callbackUrl?: string): Promis
 
 export async function googleSignInAction(callbackUrl?: string) {
   await signIn("google", { redirectTo: safeRedirect(callbackUrl) })
+}
+
+/**
+ * Emails a reset link if the account exists. Always reports success so the
+ * form can't be used to discover which emails have accounts.
+ */
+export async function requestPasswordResetAction(input: unknown): Promise<AuthActionResult> {
+  const parsed = forgotPasswordSchema.safeParse(input)
+  if (!parsed.success) return { error: "Enter a valid email address." }
+  const { email } = parsed.data
+
+  const { limit, windowSec } = LIMITS.passwordReset
+  const ip = hashIp(clientIp(await headers()))
+  const [byIp, byEmail] = await Promise.all([
+    rateLimit(`pwreset:ip:${ip}`, limit, windowSec),
+    rateLimit(`pwreset:email:${email}`, limit, windowSec),
+  ])
+  if (!byIp.ok || !byEmail.ok) return { error: "Too many reset requests. Try again in an hour." }
+
+  const user = await db.query.users.findFirst({ where: eq(users.email, email), columns: { name: true } })
+  if (user) {
+    const token = await createResetToken(email)
+    const resetUrl = `${appUrl}/reset-password?${new URLSearchParams({ email, token })}`
+    after(() => sendPasswordResetEmail(email, { name: user.name, resetUrl, expiresInMin: RESET_TTL_MIN }))
+  }
+}
+
+/** Sets a new password from a valid reset link, then signs the user in. */
+export async function resetPasswordAction(
+  input: unknown,
+  link: { email?: string; token?: string }
+): Promise<AuthActionResult> {
+  const parsed = resetPasswordSchema.safeParse(input)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check your new password." }
+  const email = link.email?.trim().toLowerCase()
+  if (!email || !link.token) return { error: "This reset link is invalid. Request a new one." }
+
+  if (!(await consumeResetToken(email, link.token))) {
+    return { error: "This reset link is invalid or has expired. Request a new one." }
+  }
+  await db
+    .update(users)
+    .set({ passwordHash: await bcrypt.hash(parsed.data.password, 12) })
+    .where(eq(users.email, email))
+
+  return signInWithPassword(email, parsed.data.password, "/dashboard")
 }

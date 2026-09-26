@@ -101,9 +101,16 @@ export function AuthForm({ mode, googleEnabled }: { mode: Mode; googleEnabled: b
           const errorId = `${f.name}-error`
           return (
             <div key={f.name} className="flex flex-col gap-2">
-              <Label htmlFor={f.name} className="text-[14px] font-semibold text-ink">
-                {f.label}
-              </Label>
+              <div className="flex items-center justify-between gap-3">
+                <Label htmlFor={f.name} className="text-[14px] font-semibold text-ink">
+                  {f.label}
+                </Label>
+                {mode === "login" && f.name === "password" && (
+                  <Link href="/forgot-password" className="text-[13px] font-semibold text-brand hover:underline">
+                    Forgot password?
+                  </Link>
+                )}
+              </div>
               <Input
                 id={f.name}
                 type={f.type}

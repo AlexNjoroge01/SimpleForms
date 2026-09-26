@@ -5,6 +5,7 @@ import { Resend } from "resend"
 
 import DailyDigestEmail, { type DailyDigestEmailProps } from "@/emails/daily-digest-email"
 import NewSubmissionEmail, { type NewSubmissionEmailProps } from "@/emails/new-submission-email"
+import PasswordResetEmail, { type PasswordResetEmailProps } from "@/emails/password-reset-email"
 import WelcomeEmail from "@/emails/welcome-email"
 import { appUrl, env, isConfigured } from "@/lib/env"
 
@@ -26,6 +27,12 @@ async function send(to: string, subject: string, react: ReactElement) {
 
 export function sendWelcomeEmail({ to, name }: { to: string; name?: string | null }) {
   return send(to, "Welcome to SimpleForms", WelcomeEmail({ name, appUrl }))
+}
+
+export function sendPasswordResetEmail(to: string, props: PasswordResetEmailProps) {
+  // With Resend mocked, print the link so the flow can be tested locally.
+  if (!resend && process.env.NODE_ENV !== "production") console.info(`[email:mock] reset link: ${props.resetUrl}`)
+  return send(to, "Reset your SimpleForms password", PasswordResetEmail(props))
 }
 
 export function sendNewSubmissionEmail(to: string, props: NewSubmissionEmailProps) {

@@ -34,4 +34,6 @@ export async function rateLimit(key: string, limit: number, windowSec: number): 
 export const LIMITS = {
   submit: { limit: 10, windowSec: 10 * 60 },
   uploadSign: { limit: 30, windowSec: 10 * 60 },
+  // Per IP and per email, so one inbox can't be flooded from many IPs.
+  passwordReset: { limit: 5, windowSec: 60 * 60 },
 } as const
