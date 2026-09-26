@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm"
 import NextAuth, { type DefaultSession } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import Google from "next-auth/providers/google"
-import { redirect } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 import { authConfig } from "@/auth.config"
 import { accounts, sessions, users, verificationTokens } from "@/db/schema"
@@ -63,4 +63,23 @@ export async function requireUser() {
   const session = await auth()
   if (!session?.user?.id) redirect("/login")
   return session.user
+}
+
+/** Whether this account can open /admin. Read from the DB so revoking takes effect immediately. */
+export async function isAdmin(userId: string) {
+  const row = await db.query.users.findFirst({ where: eq(users.id, userId), columns: { isAdmin: true } })
+  return row?.isAdmin ?? false
+}
+
+/** Current admin, or 404 for everyone else (don't advertise that /admin exists). */
+export async function requireAdmin() {
+  const user = await requireUser()
+  if (!(await isAdmin(user.id))) notFound()
+  return user
+}
+
+/** Current user or null — for route handlers, which answer 401 instead of redirecting. */
+export async function apiUser() {
+  const session = await auth()
+  return session?.user?.id ? session.user : null
 }

@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test"
 
+import { createBlankForm } from "./helpers"
+
 // Phase 1 acceptance: sign up, log in, create + see a blank draft,
 // and cannot access another user's form.
 const run = Date.now()
@@ -33,7 +35,7 @@ test("phase 1: auth, dashboard, ownership", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Create your first form" })).toBeVisible()
 
   // Create a blank draft → builder → back on dashboard.
-  await page.getByRole("button", { name: "Create a form" }).click()
+  await createBlankForm(page)
   await expect(page).toHaveURL(/\/forms\/[^/]+\/edit$/)
   const formUrl = page.url()
   await expect(page.getByLabel("Form title")).toHaveValue("Untitled form")

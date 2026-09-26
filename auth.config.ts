@@ -1,7 +1,7 @@
 import type { NextAuthConfig } from "next-auth"
 
 // Edge-light auth config shared by proxy.ts and lib/auth.ts (no DB imports here).
-export const APP_PREFIXES = ["/dashboard", "/forms", "/settings"]
+export const APP_PREFIXES = ["/dashboard", "/forms", "/settings", "/admin"]
 const AUTH_PAGES = ["/login", "/signup"]
 
 export const authConfig = {

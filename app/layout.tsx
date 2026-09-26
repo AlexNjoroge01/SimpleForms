@@ -19,11 +19,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: {
-    default: "SimpleForms — Beautiful forms for Kenya, built with AI",
+    default: "SimpleForms — Beautiful forms for Kenya",
     template: "%s · SimpleForms",
   },
   description:
-    "Describe the form you need and SimpleForms builds it. Share by link or QR, collect responses, export to CSV.",
+    "Build a form from scratch or a Kenyan template. Share by link or QR, collect responses, export to CSV.",
 }
 
 export const viewport: Viewport = {

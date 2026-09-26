@@ -3,6 +3,8 @@ import "server-only"
 import type { ReactElement } from "react"
 import { Resend } from "resend"
 
+import DailyDigestEmail, { type DailyDigestEmailProps } from "@/emails/daily-digest-email"
+import NewSubmissionEmail, { type NewSubmissionEmailProps } from "@/emails/new-submission-email"
 import WelcomeEmail from "@/emails/welcome-email"
 import { appUrl, env, isConfigured } from "@/lib/env"
 
@@ -24,4 +26,13 @@ async function send(to: string, subject: string, react: ReactElement) {
 
 export function sendWelcomeEmail({ to, name }: { to: string; name?: string | null }) {
   return send(to, "Welcome to SimpleForms", WelcomeEmail({ name, appUrl }))
+}
+
+export function sendNewSubmissionEmail(to: string, props: NewSubmissionEmailProps) {
+  return send(to, `New response: ${props.formTitle}`, NewSubmissionEmail(props))
+}
+
+export function sendDailyDigestEmail(to: string, props: DailyDigestEmailProps) {
+  const total = props.forms.reduce((n, f) => n + f.count, 0)
+  return send(to, `${total} new ${total === 1 ? "response" : "responses"} today`, DailyDigestEmail(props))
 }

@@ -21,6 +21,18 @@ export function normalizeKenyanPhone(input: string): string | null {
   return parsed?.isValid() ? parsed.number : null
 }
 
+/**
+ * Formats the national part of a Kenyan number while the user types next to a
+ * fixed "+254" chip (§8): strips a pasted +254/254 prefix and a leading 0,
+ * keeps at most 9 digits, groups as "712 345 678".
+ */
+export function formatPhoneTyping(input: string): string {
+  let digits = input.replace(/\D/g, "")
+  if (input.trim().startsWith("+254") || (digits.startsWith("254") && digits.length > 9)) digits = digits.slice(3)
+  digits = digits.replace(/^0+/, "").slice(0, 9)
+  return [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 9)].filter(Boolean).join(" ")
+}
+
 /** `+254712345678` → `+254 712 345 678` (falls back to the input). */
 export function formatKenyanPhone(e164: string): string {
   const m = /^\+254(\d{3})(\d{3})(\d{3})$/.exec(e164)

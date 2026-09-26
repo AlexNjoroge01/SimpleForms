@@ -3,8 +3,8 @@ import { z } from "zod"
 import { LIMITS } from "@/lib/fields/registry"
 import { FIELD_TYPES, type Field } from "@/lib/fields/types"
 
-// Structural validation of Field objects (§6 shape). Used for draft autosave now,
-// and for AI output validation in Phase 8. Never let unvalidated fields reach the DB.
+// Structural validation of Field objects (§6 shape). Used for draft autosave.
+// Never let unvalidated fields reach the DB.
 
 const id = z.string().regex(/^[a-z0-9]{1,32}$/i, "Invalid id")
 const isoDay = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)

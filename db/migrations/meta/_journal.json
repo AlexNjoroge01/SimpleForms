@@ -15,6 +15,20 @@
       "when": 1790332242867,
       "tag": "0001_neon_storage",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790359851456,
+      "tag": "0002_publish_snapshot",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790410136096,
+      "tag": "0003_admin_role",
+      "breakpoints": true
     }
   ]
 }

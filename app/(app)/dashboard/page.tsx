@@ -28,8 +28,7 @@ export default async function DashboardPage() {
           </div>
           <h2 className="h3">Create your first form</h2>
           <p className="max-w-sm">
-            Start with a blank form. Soon you’ll also be able to describe it to AI or pick one of ten
-            Kenyan templates.
+            Start with a blank form or pick one of ten Kenyan templates.
           </p>
           <NewFormButton label="Create a form" />
         </div>

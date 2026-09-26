@@ -1,5 +1,6 @@
 import { createId } from "@paralleldrive/cuid2"
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -49,6 +50,8 @@ export const users = pgTable("users", {
   emailNotifications: emailNotificationEnum("email_notifications")
     .notNull()
     .default("EACH_SUBMISSION"),
+  // Grants /admin. Seeded by migration 0003 and `pnpm db:seed-admin`.
+  isAdmin: boolean("is_admin").notNull().default(false),
   ...timestamps,
 })
 
@@ -105,6 +108,9 @@ export const forms = pgTable(
     status: formStatusEnum("status").notNull().default("DRAFT"),
     fields: jsonb("fields").$type<Field[]>().notNull().default([]),
     publishedFields: jsonb("published_fields").$type<Field[]>(),
+    // Title/description are snapshotted with the fields so draft edits never leak to the live form.
+    publishedTitle: text("published_title"),
+    publishedDescription: text("published_description"),
     settings: jsonb("settings").$type<FormSettings>().notNull(),
     responseCount: integer("response_count").notNull().default(0),
     publishedAt: timestamp("published_at", { withTimezone: true }),
@@ -159,7 +165,7 @@ export const uploads = pgTable(
   ]
 )
 
-// --- Rate limiting (in-DB fixed-window counter, Blueprint §7.3 / §10) -----------
+// --- Rate limiting (in-DB fixed-window counter, Blueprint §10) -----------------
 
 export const rateLimits = pgTable("rate_limits", {
   key: text("key").primaryKey(),

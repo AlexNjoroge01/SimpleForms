@@ -13,8 +13,6 @@ const schema = z.object({
   AUTH_GOOGLE_ID: z.string().min(1),
   AUTH_GOOGLE_SECRET: z.string().min(1),
   NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
-  OPENROUTER_API_KEY: z.string().min(1),
-  OPENROUTER_MODEL: z.string().min(1),
   AWS_ENDPOINT_URL_S3: z.url(),
   AWS_REGION: z.string().min(1).default("us-east-1"),
   AWS_ACCESS_KEY_ID: z.string().min(1),
@@ -27,12 +25,11 @@ const schema = z.object({
 
 export const env = schema.parse(process.env)
 
-type Service = "database" | "google" | "openrouter" | "storage" | "resend"
+type Service = "database" | "google" | "storage" | "resend"
 
 const serviceKeys: Record<Service, (keyof typeof env)[]> = {
   database: ["DATABASE_URL"],
   google: ["AUTH_GOOGLE_ID", "AUTH_GOOGLE_SECRET"],
-  openrouter: ["OPENROUTER_API_KEY"],
   storage: ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"],
   resend: ["RESEND_API_KEY"],
 }

@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test"
 
+import { createBlankForm } from "./helpers"
+
 // Phase 2 acceptance: every field type can be added, configured, reordered,
 // deleted; refresh preserves state.
 
@@ -24,7 +26,7 @@ async function signupAndCreateForm(page: Page) {
   await page.getByLabel("Email").fill(`e2e-builder-${Date.now()}-${Math.random().toString(36).slice(2, 6)}@example.test`)
   await page.getByLabel("Password").fill("builder-pass-1")
   await page.getByRole("button", { name: "Create account" }).click()
-  await page.getByRole("button", { name: "Create a form" }).click()
+  await createBlankForm(page)
   await expect(page).toHaveURL(/\/forms\/[^/]+\/edit$/)
 }
 

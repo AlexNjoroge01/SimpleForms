@@ -9,6 +9,8 @@ import {
   RiLockUnlockLine,
   RiMore2Fill,
   RiPencilLine,
+  RiShareLine,
+  RiTableLine,
 } from "@remixicon/react"
 import { formatDistanceToNow } from "date-fns"
 import { toast } from "sonner"
@@ -66,6 +68,16 @@ export function FormCard({ form }: { form: FormListItem }) {
             <DropdownMenuItem asChild>
               <Link href={`/forms/${form.id}/edit`}>
                 <RiPencilLine /> Edit
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/forms/${form.id}/responses`}>
+                <RiTableLine /> Responses
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/forms/${form.id}/share`}>
+                <RiShareLine /> Share
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => run(() => duplicateForm(form.id), "Form duplicated")}>

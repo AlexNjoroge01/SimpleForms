@@ -31,7 +31,7 @@ export function Footer() {
       <div className="container-site grid gap-12 py-16 md:grid-cols-[1.5fr_repeat(3,1fr)]">
         <div className="flex max-w-xs flex-col gap-4">
           <Logo />
-          <p className="text-[15px]">Beautiful, AI-built forms for Kenya. Share by link or QR, export to CSV.</p>
+          <p className="text-[15px]">Beautiful, mobile-first forms for Kenya. Share by link or QR, export to CSV.</p>
         </div>
         {columns.map((col) => (
           <div key={col.heading} className="flex flex-col gap-4">

@@ -95,7 +95,7 @@ export function AuthForm({ mode, googleEnabled }: { mode: Mode; googleEnabled: b
         <span className="h-px flex-1 bg-line" /> or <span className="h-px flex-1 bg-line" />
       </div>
 
-      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+      <form method="post" onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
         {fields[mode].map((f) => {
           const error = form.formState.errors[f.name]?.message as string | undefined
           const errorId = `${f.name}-error`

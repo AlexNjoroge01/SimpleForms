@@ -22,7 +22,7 @@ import type { AnswerValue, Field, FieldOption, FieldType } from "@/lib/fields/ty
 
 /**
  * The single field registry (Blueprint §3). Builder, public renderer, submission
- * validator, AI output validator and CSV exporter all read from here.
+ * validator and CSV exporter all read from here.
  * UI renderers live in components/ and are keyed by the same `FieldType`.
  */
 

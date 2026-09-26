@@ -2,11 +2,12 @@ import Link from "next/link"
 
 import { UserMenu } from "@/components/app/user-menu"
 import { Logo } from "@/components/site/logo"
-import { requireUser } from "@/lib/auth"
+import { isAdmin, requireUser } from "@/lib/auth"
 
 // Authed shell. proxy.ts redirects optimistically; this is the real check.
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser()
+  const admin = await isAdmin(user.id)
 
   return (
     <div className="min-h-svh">
@@ -17,7 +18,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <Link href="/dashboard" className="text-ink-muted transition-colors hover:text-ink">
               Forms
             </Link>
-            <UserMenu user={user} />
+            {admin && (
+              <Link href="/admin" className="text-ink-muted transition-colors hover:text-ink">
+                Admin
+              </Link>
+            )}
+            <UserMenu user={user} isAdmin={admin} />
           </nav>
         </div>
       </header>

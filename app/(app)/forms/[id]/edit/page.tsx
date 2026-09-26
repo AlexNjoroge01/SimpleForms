@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 
 import { Builder } from "@/components/builder/builder"
+import { resolveSettings } from "@/lib/fields/settings"
 import { getMyFormOr404 } from "@/lib/forms"
 
 export const metadata: Metadata = { title: "Edit form" }
@@ -12,7 +13,20 @@ export default async function EditFormPage({ params }: { params: Promise<{ id: s
   return (
     <Builder
       key={form.id}
-      form={{ id: form.id, title: form.title, description: form.description, fields: form.fields, status: form.status }}
+      form={{
+        id: form.id,
+        title: form.title,
+        description: form.description,
+        fields: form.fields,
+        status: form.status,
+        slug: form.slug,
+        settings: resolveSettings(form.settings),
+        published: {
+          title: form.publishedTitle,
+          description: form.publishedDescription,
+          fields: form.publishedFields,
+        },
+      }}
     />
   )
 }

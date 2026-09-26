@@ -36,7 +36,8 @@ export function useAutosave() {
         })
       }
     })
-    return queue.current
+    // Resolves true when everything up to now is saved (publish/preview rely on it).
+    return queue.current.then(() => useBuilderStore.getState().version === savedVersion.current)
   }, [])
 
   React.useEffect(() => {

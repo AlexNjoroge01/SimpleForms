@@ -34,12 +34,15 @@ export function signUpload(key: string, opts: { maxBytes: number; contentType: s
   })
 }
 
-/** Short-lived download URL; forced attachment so uploads never render inline. */
-export function downloadUrl(key: string, originalName?: string | null, expiresIn = 60 * 60) {
-  const filename = (originalName ?? "file").replace(/["\\\r\n]/g, "")
+/**
+ * Short-lived download URL. Forced to attachment so uploads never render
+ * inline — except raster images the owner previews (`inline: true`).
+ */
+export function downloadUrl(key: string, originalName?: string | null, { expiresIn = 60 * 60, inline = false } = {}) {
+  const filename = (originalName ?? "file").replace(/[^\x20-\x7e]|["\\]/g, "_")
   return files.url(key, {
     expiresIn,
-    responseContentDisposition: `attachment; filename="${filename}"`,
+    responseContentDisposition: `${inline ? "inline" : "attachment"}; filename="${filename}"`,
   })
 }
 

@@ -1,4 +1,4 @@
-// Public forms (/f/[slug]) — minimal chrome, no auth. Built in Phase 3.
+// Public forms (/f/[slug]) — no auth, no app chrome. PublicFormShell handles the page theme.
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
-  return <main className="min-h-svh px-4 py-12">{children}</main>
+  return <main>{children}</main>
 }

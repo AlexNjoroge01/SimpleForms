@@ -10,6 +10,7 @@ import { requireUser } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { DEFAULT_FORM_SETTINGS } from "@/lib/fields/types"
 import { deleteObjects } from "@/lib/storage"
+import { getTemplate, instantiateTemplate } from "@/lib/templates"
 
 export type ActionResult = { ok: true } | { ok: false; error: string }
 
@@ -24,6 +25,24 @@ export async function createBlankForm() {
   const [form] = await db
     .insert(forms)
     .values({ userId: user.id, title: "Untitled form", fields: [], settings: DEFAULT_FORM_SETTINGS })
+    .returning({ id: forms.id })
+  redirect(`/forms/${form.id}/edit`)
+}
+
+/** Clones a template (§8) into a new DRAFT owned by the user. */
+export async function createFromTemplate(key: string) {
+  const user = await requireUser()
+  const template = getTemplate(key)
+  if (!template) redirect("/forms/new")
+  const [form] = await db
+    .insert(forms)
+    .values({
+      userId: user.id,
+      title: template.title,
+      description: template.description,
+      fields: instantiateTemplate(template),
+      settings: { ...DEFAULT_FORM_SETTINGS, ...template.settings },
+    })
     .returning({ id: forms.id })
   redirect(`/forms/${form.id}/edit`)
 }

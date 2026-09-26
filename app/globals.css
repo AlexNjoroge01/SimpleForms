@@ -281,6 +281,42 @@
   .on-dark :focus-visible {
     outline-color: var(--neon);
   }
+  /* Public form theme (Blueprint §9.7, §16): per-form accent + light/dark.
+     Derived tokens: --pf-border (darker hairline so inputs pass 3:1 against
+     white), --pf-error (AA red), --pf-accent-fg (accent lifted for dark bg). */
+  .pf {
+    --pf-accent: var(--accent-color, var(--primary));
+    --pf-accent-fg: var(--pf-accent);
+    --pf-surface: var(--surface);
+    --pf-text: var(--text);
+    --pf-muted: var(--text-muted);
+    --pf-subtle: var(--text-subtle);
+    --pf-input: var(--surface);
+    --pf-border: rgba(18, 33, 25, 0.22);
+    --pf-accent-tint: color-mix(in srgb, var(--pf-accent) 9%, var(--surface));
+    --pf-error: #b42318;
+    background: var(--bg-gradient) fixed;
+    color: var(--pf-text);
+  }
+  .pf[data-theme="dark"] {
+    --pf-accent-fg: color-mix(in srgb, var(--pf-accent) 45%, white);
+    --pf-surface: var(--dark-panel);
+    --pf-text: var(--dark-text);
+    --pf-muted: var(--dark-muted);
+    --pf-subtle: var(--dark-subtle);
+    --pf-input: var(--dark-input);
+    --pf-border: var(--dark-border);
+    --pf-accent-tint: color-mix(in srgb, var(--pf-accent) 28%, var(--dark-panel));
+    --pf-error: #fda29b;
+    background: var(--dark-section) fixed;
+    background-color: var(--dark);
+  }
+  .pf p {
+    color: var(--pf-muted);
+  }
+  .pf :focus-visible {
+    outline-color: var(--pf-accent-fg);
+  }
   .dot-grid {
     background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
     background-size: 24px 24px;

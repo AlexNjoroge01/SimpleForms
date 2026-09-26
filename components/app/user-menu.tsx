@@ -1,6 +1,7 @@
 "use client"
 
-import { RiLogoutBoxRLine } from "@remixicon/react"
+import Link from "next/link"
+import { RiDashboard3Line, RiLogoutBoxRLine, RiSettings3Line } from "@remixicon/react"
 
 import { signOutAction } from "@/app/(app)/actions"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -23,7 +24,13 @@ function initials(name?: string | null, email?: string | null) {
     .join("")
 }
 
-export function UserMenu({ user }: { user: { name?: string | null; email?: string | null; image?: string | null } }) {
+export function UserMenu({
+  user,
+  isAdmin = false,
+}: {
+  user: { name?: string | null; email?: string | null; image?: string | null }
+  isAdmin?: boolean
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -42,6 +49,18 @@ export function UserMenu({ user }: { user: { name?: string | null; email?: strin
           <span className="truncate text-[13px] font-normal text-ink-muted">{user.email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/settings">
+            <RiSettings3Line /> Settings
+          </Link>
+        </DropdownMenuItem>
+        {isAdmin && (
+          <DropdownMenuItem asChild>
+            <Link href="/admin">
+              <RiDashboard3Line /> Admin
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onSelect={() => signOutAction()}>
           <RiLogoutBoxRLine /> Log out
         </DropdownMenuItem>
