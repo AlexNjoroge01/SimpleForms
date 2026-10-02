@@ -32,14 +32,14 @@ export function sendWelcomeEmail({ to, name }: { to: string; name?: string | nul
 export function sendPasswordResetEmail(to: string, props: PasswordResetEmailProps) {
   // With Resend mocked, print the link so the flow can be tested locally.
   if (!resend && process.env.NODE_ENV !== "production") console.info(`[email:mock] reset link: ${props.resetUrl}`)
-  return send(to, "Reset your SimpleForms password", PasswordResetEmail(props))
+  return send(to, "Reset your SimpleForms password", PasswordResetEmail({ ...props, appUrl }))
 }
 
 export function sendNewSubmissionEmail(to: string, props: NewSubmissionEmailProps) {
-  return send(to, `New response: ${props.formTitle}`, NewSubmissionEmail(props))
+  return send(to, `New response: ${props.formTitle}`, NewSubmissionEmail({ ...props, appUrl }))
 }
 
 export function sendDailyDigestEmail(to: string, props: DailyDigestEmailProps) {
   const total = props.forms.reduce((n, f) => n + f.count, 0)
-  return send(to, `${total} new ${total === 1 ? "response" : "responses"} today`, DailyDigestEmail(props))
+  return send(to, `${total} new ${total === 1 ? "response" : "responses"} today`, DailyDigestEmail({ ...props, appUrl }))
 }

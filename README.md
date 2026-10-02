@@ -16,14 +16,14 @@ Kenyan-first form builder: create forms from scratch or from a template, publish
 | 4 | +254 phone input, KES formatting, counties, 10 templates, `/forms/new` chooser | ✅ Done — unit + e2e |
 | 5 | Share page (copy, QR PNG/SVG, WhatsApp, open), OG meta + OG image | ✅ Done — QR decode unit test + e2e |
 | 6 | Responses table (25/page, search, date + choice filters), drawer, delete / bulk delete, streaming CSV export, seed script | ✅ Done — 1,000-response e2e |
-| 7 | File uploads (presigned POST to Neon Object Storage), `/api/files` owner links, orphan cleanup cron | ⚠️ Code done; **bucket not provisioned yet** (see below) — server-side rules tested |
+| 7 | File uploads (presigned POST to Neon Object Storage), `/api/files` owner links, orphan cleanup cron | ✅ Done — bucket provisioned on the `production` branch (2026-10-02); server-side rules tested |
 | 8 | ~~AI generate / edit (OpenRouter)~~ | ❌ Removed — no paid AI during the free beta. Forms start blank or from a template |
 | 9 | Emails (new submission, daily digest), cron jobs, full landing, settings page, loading/error/not-found states | ✅ Done — e2e incl. full mobile core flow |
 | 10 | Admin dashboard (`/admin`): users, new sign-ups, active creators, forms, responses, 30-day sign-up chart, recent users | ✅ Done — admin flag seeded for alexnjoroge102@gmail.com |
 | 11 | Forgot / reset password (emailed one-hour, single-use link), `db:set-password` script | ✅ Done — e2e (`password-reset.spec.ts`) |
 
 ### Before going live
-- **Provision the storage bucket:** `neon link && neon deploy` (creates `simpleforms-uploads` from [neon.ts](neon.ts)). Browsers upload straight to the bucket, so it must allow CORS `POST` from `NEXT_PUBLIC_APP_URL`. Until then, file-upload questions show “Upload failed”.
+- **Storage bucket:** provisioned. To recreate it: `neon deploy --project-id bold-hat-57726016 --branch br-cool-king-b41g15ht --no-env-pull` (creates `simpleforms-uploads` from [neon.ts](neon.ts)). Browsers upload straight to the bucket, so it must allow CORS `POST` from `NEXT_PUBLIC_APP_URL`. Neon buckets currently allow any origin.
 - **Resend:** verify a sending domain; in sandbox mode only the account owner receives mail.
 
 ## Stack
@@ -104,7 +104,7 @@ components/
   admin/              StatTile, SignupChart
   share/ new-form/ site/ app/ dashboard/ auth/ ui/
 db/schema.ts · db/seed.ts · db/seed-admin.ts · db/migrations
-emails/               Welcome, NewSubmission, DailyDigest
+emails/               Welcome, PasswordReset, NewSubmission, DailyDigest; components/email-shell.tsx (shared brand frame)
 lib/
   fields/             registry, types, build-zod-schema, field-schema, publish (validation),
                       settings (accent presets, availability), display, files, assign-ids, canonical
@@ -129,7 +129,7 @@ tests/unit · tests/e2e
 - **Admin:** `users.is_admin` (migration `0003_admin_role` seeds the owner; `pnpm db:seed-admin` re-applies it). `requireAdmin()` reads the flag from the DB on every request, so revoking is immediate, and answers 404 to non-admins. Counts include every account, so running `pnpm db:seed` or the e2e suite against this database adds demo/test users (e2e users are removed by the teardown; remove the demo user with `delete from users where email = 'demo@simpleforms.test'`). `lib/admin.ts` runs the aggregates in parallel; days are bucketed in Africa/Nairobi.
 - **Field registry:** every question type is defined once in [lib/fields/registry.ts](lib/fields/registry.ts). Adding a type = one registry entry + a builder preview case + a public control case.
 - **Password reset:** the token is 32 random bytes; only its SHA-256 is stored, in `verification_tokens` under `password-reset:<email>`. It expires after 60 minutes and is deleted by the same query that checks it, so it works once. Requesting a link always shows the same "check your email" answer, whether or not the account exists, and is limited to 5 an hour per IP and per email. A successful reset signs you in. Existing sessions are JWTs, so other devices stay signed in until their session expires. With Resend in sandbox mode, only the Resend account owner receives the email; with a `mock_` key, the link is printed to the dev console.
-- **Email:** `lib/email.ts` never throws; failures are logged so they can't break a user flow.
+- **Email:** `lib/email.ts` never throws; failures are logged so they can't break a user flow. Every template renders inside `EmailShell`: the favicon (`public/email-logo.png`, a PNG copy of `app/favicon.ico` because most mail clients won't show `.ico`) and the SimpleForms wordmark on top, the page `--bg-gradient` background, a white card with the green-to-gold `--progress` strip and card shadow, and a footer link. The logo is loaded from `NEXT_PUBLIC_APP_URL`, so it only appears once that URL is the live site. Clients without gradient support (Outlook, some Gmail views) show the solid `--bg` colour instead. If you change the favicon, regenerate the PNG.
 - **Theme:** the site is always light (pale-green page, dark only inside `DarkSection` blocks and the public form's per-form dark theme, which is scoped to `.pf`). `ThemeProvider` sets `forcedTheme="light"` so a stale `theme=dark` in localStorage can't put `.dark` on `<html>` and flip every token site-wide.
 
 ### Design notes (derived values not in Design.md)
